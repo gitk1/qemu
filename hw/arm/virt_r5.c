@@ -1,5 +1,5 @@
 /*
- * ARM mach-virt emulation
+ * ARM mach-virt emulation for cortex R5
  *
  * Copyright (c) 2013 Linaro Limited
  *
@@ -80,15 +80,50 @@
 #include "hw/char/pl011.h"
 #include "qemu/guest-random.h"
 
+
+#define TYPE_VIRT_MACHINE "virtr"
+#define TYPE_VIRT_R5_MACHINE MACHINE_TYPE_NAME("virt-r5")
+#define VIRT_MACHINE(obj) \
+	OBJECT_CHECK(VirtMachineState, (obj), TYPE_VIRT_MACHINE)
+
+#define VIRT_MACHINE_GET_CLASS(obj) \
+	OBJECT_GET_CLASS(VirtMachineClass, obj, TYPE_VIRT_MACHINE)
+#define VIRT_MACHINE_CLASS(klass) \
+	OBJECT_CLASS_CHECK(VirtMachineClass, klass, TYPE_VIRT_MACHINE)
+
+
+static void virt_r5_class_init(ObjectClass *oc, void *data){
+	
+	MachineClass *mc = MACHINE_CLASS(oc);
+        virt_r5_machine_options(mc); 
+        mc->desc = "QEMU ARM Virtual Machine for Cortex-R5"; 
+        if (latest) { 
+            mc->alias = "virt_r5";
+        } 
+}
+
+
+static const TypeInfo machvirt_info = { 
+        .name = MACHINE_TYPE_NAME("virt-r5"),
+        .parent = TYPE_VIRT_MACHINE
+        .class_init = virt_r5_class_init,
+    }; 
+static void machvirt_machine_init(void){ 
+        type_register_static(&machvirt_info);
+    }
+    
+type_init(machvirt_machine_init);
+
+/*
 #define DEFINE_VIRT_MACHINE_LATEST(major, minor, latest) \
     static void virt_##major##_##minor##_class_init(ObjectClass *oc, \
                                                     void *data) \
     { \
         MachineClass *mc = MACHINE_CLASS(oc); \
         virt_machine_##major##_##minor##_options(mc); \
-        mc->desc = "QEMU " # major "." # minor " ARM Virtual Machine"; \
+        mc->desc = "QEMU " # major "." # minor " ARM Virtual Machine for Cortex-R5"; \
         if (latest) { \
-            mc->alias = "virt"; \
+            mc->alias = "virt_r5"; \
         } \
     } \
     static const TypeInfo machvirt_##major##_##minor##_info = { \
@@ -102,10 +137,19 @@
     } \
     type_init(machvirt_machine_##major##_##minor##_init);
 
+*/
+
+
+
+/*
+
 #define DEFINE_VIRT_MACHINE_AS_LATEST(major, minor) \
     DEFINE_VIRT_MACHINE_LATEST(major, minor, true)
 #define DEFINE_VIRT_MACHINE(major, minor) \
     DEFINE_VIRT_MACHINE_LATEST(major, minor, false)
+
+*/
+
 
 
 /* Number of external interrupt lines to configure the GIC with */
@@ -143,24 +187,24 @@ static const MemMapEntry base_memmap[] = {
     [VIRT_GIC_ITS] =            { 0x08080000, 0x00020000 },
     /* This redistributor space allows up to 2*64kB*123 CPUs */
     [VIRT_GIC_REDIST] =         { 0x080A0000, 0x00F60000 },
-    [VIRT_UART] =               { 0x09000000, 0x00001000 },
-    [VIRT_RTC] =                { 0x09010000, 0x00001000 },
-    [VIRT_FW_CFG] =             { 0x09020000, 0x00000018 },
-    [VIRT_GPIO] =               { 0x09030000, 0x00001000 },
-    [VIRT_SECURE_UART] =        { 0x09040000, 0x00001000 },
-    [VIRT_SMMU] =               { 0x09050000, 0x00020000 },
-    [VIRT_PCDIMM_ACPI] =        { 0x09070000, MEMORY_HOTPLUG_IO_LEN },
-    [VIRT_ACPI_GED] =           { 0x09080000, ACPI_GED_EVT_SEL_LEN },
-    [VIRT_NVDIMM_ACPI] =        { 0x09090000, NVDIMM_ACPI_IO_LEN},
-    [VIRT_PVTIME] =             { 0x090a0000, 0x00010000 },
-    [VIRT_SECURE_GPIO] =        { 0x090b0000, 0x00001000 },
-    [VIRT_MMIO] =               { 0x0a000000, 0x00000200 },
+//    [VIRT_UART] =               { 0x09000000, 0x00001000 },
+//    [VIRT_RTC] =                { 0x09010000, 0x00001000 },
+//    [VIRT_FW_CFG] =             { 0x09020000, 0x00000018 },
+//    [VIRT_GPIO] =               { 0x09030000, 0x00001000 },
+//    [VIRT_SECURE_UART] =        { 0x09040000, 0x00001000 },
+//    [VIRT_SMMU] =               { 0x09050000, 0x00020000 },
+//    [VIRT_PCDIMM_ACPI] =        { 0x09070000, MEMORY_HOTPLUG_IO_LEN },
+//    [VIRT_ACPI_GED] =           { 0x09080000, ACPI_GED_EVT_SEL_LEN },
+//    [VIRT_NVDIMM_ACPI] =        { 0x09090000, NVDIMM_ACPI_IO_LEN},
+//    [VIRT_PVTIME] =             { 0x090a0000, 0x00010000 },
+//    [VIRT_SECURE_GPIO] =        { 0x090b0000, 0x00001000 },
+//    [VIRT_MMIO] =               { 0x0a000000, 0x00000200 },
     /* ...repeating for a total of NUM_VIRTIO_TRANSPORTS, each of that size */
-    [VIRT_PLATFORM_BUS] =       { 0x0c000000, 0x02000000 },
-    [VIRT_SECURE_MEM] =         { 0x0e000000, 0x01000000 },
-    [VIRT_PCIE_MMIO] =          { 0x10000000, 0x2eff0000 },
-    [VIRT_PCIE_PIO] =           { 0x3eff0000, 0x00010000 },
-    [VIRT_PCIE_ECAM] =          { 0x3f000000, 0x01000000 },
+//    [VIRT_PLATFORM_BUS] =       { 0x0c000000, 0x02000000 },
+//    [VIRT_SECURE_MEM] =         { 0x0e000000, 0x01000000 },
+//    [VIRT_PCIE_MMIO] =          { 0x10000000, 0x2eff0000 },
+//    [VIRT_PCIE_PIO] =           { 0x3eff0000, 0x00010000 },
+//    [VIRT_PCIE_ECAM] =          { 0x3f000000, 0x01000000 },
     /* Actual RAM size depends on initial RAM and device memory settings */
     [VIRT_MEM] =                { GiB, LEGACY_RAMLIMIT_BYTES },
 };
@@ -178,9 +222,9 @@ static const MemMapEntry base_memmap[] = {
 static MemMapEntry extended_memmap[] = {
     /* Additional 64 MB redist region (can contain up to 512 redistributors) */
     [VIRT_HIGH_GIC_REDIST2] =   { 0x0, 64 * MiB },
-    [VIRT_HIGH_PCIE_ECAM] =     { 0x0, 256 * MiB },
+//    [VIRT_HIGH_PCIE_ECAM] =     { 0x0, 256 * MiB },
     /* Second PCIe window */
-    [VIRT_HIGH_PCIE_MMIO] =     { 0x0, 512 * GiB },
+//    [VIRT_HIGH_PCIE_MMIO] =     { 0x0, 512 * GiB },
 };
 
 static const int a15irqmap[] = {
@@ -203,6 +247,7 @@ static const char *valid_cpus[] = {
     ARM_CPU_TYPE_NAME("cortex-a57"),
     ARM_CPU_TYPE_NAME("cortex-a72"),
     ARM_CPU_TYPE_NAME("cortex-a76"),
+    ARM_CPU_TYPE_NAME("cortex-r5"),
     ARM_CPU_TYPE_NAME("a64fx"),
     ARM_CPU_TYPE_NAME("neoverse-n1"),
     ARM_CPU_TYPE_NAME("host"),
