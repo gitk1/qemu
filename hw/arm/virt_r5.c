@@ -187,8 +187,8 @@ static const MemMapEntry base_memmap[] = {
     [VIRT_GIC_ITS] =            { 0x08080000, 0x00020000 },
     /* This redistributor space allows up to 2*64kB*123 CPUs */
     [VIRT_GIC_REDIST] =         { 0x080A0000, 0x00F60000 },
-//    [VIRT_UART] =               { 0x09000000, 0x00001000 },
-//    [VIRT_RTC] =                { 0x09010000, 0x00001000 },
+    [VIRT_UART] =               { 0x09000000, 0x00001000 },
+    [VIRT_RTC] =                { 0x09010000, 0x00001000 },
 //    [VIRT_FW_CFG] =             { 0x09020000, 0x00000018 },
 //    [VIRT_GPIO] =               { 0x09030000, 0x00001000 },
 //    [VIRT_SECURE_UART] =        { 0x09040000, 0x00001000 },
@@ -227,31 +227,31 @@ static MemMapEntry extended_memmap[] = {
 //    [VIRT_HIGH_PCIE_MMIO] =     { 0x0, 512 * GiB },
 };
 
-static const int a15irqmap[] = {
+static const int r5irqmap[] = {
     [VIRT_UART] = 1,
     [VIRT_RTC] = 2,
-    [VIRT_PCIE] = 3, /* ... to 6 */
-    [VIRT_GPIO] = 7,
-    [VIRT_SECURE_UART] = 8,
-    [VIRT_ACPI_GED] = 9,
-    [VIRT_MMIO] = 16, /* ...to 16 + NUM_VIRTIO_TRANSPORTS - 1 */
+   // [VIRT_PCIE] = 3, /* ... to 6 */
+   // [VIRT_GPIO] = 7,
+   // [VIRT_SECURE_UART] = 8,
+   // [VIRT_ACPI_GED] = 9,
+   // [VIRT_MMIO] = 16, /* ...to 16 + NUM_VIRTIO_TRANSPORTS - 1 */
     [VIRT_GIC_V2M] = 48, /* ...to 48 + NUM_GICV2M_SPIS - 1 */
-    [VIRT_SMMU] = 74,    /* ...to 74 + NUM_SMMU_IRQS - 1 */
-    [VIRT_PLATFORM_BUS] = 112, /* ...to 112 + PLATFORM_BUS_NUM_IRQS -1 */
+   // [VIRT_SMMU] = 74,    /* ...to 74 + NUM_SMMU_IRQS - 1 */
+   // [VIRT_PLATFORM_BUS] = 112, /* ...to 112 + PLATFORM_BUS_NUM_IRQS -1 */
 };
 
 static const char *valid_cpus[] = {
-    ARM_CPU_TYPE_NAME("cortex-a7"),
-    ARM_CPU_TYPE_NAME("cortex-a15"),
-    ARM_CPU_TYPE_NAME("cortex-a53"),
-    ARM_CPU_TYPE_NAME("cortex-a57"),
-    ARM_CPU_TYPE_NAME("cortex-a72"),
-    ARM_CPU_TYPE_NAME("cortex-a76"),
+   // ARM_CPU_TYPE_NAME("cortex-a7"),
+   // ARM_CPU_TYPE_NAME("cortex-a15"),
+   // ARM_CPU_TYPE_NAME("cortex-a53"),
+   // ARM_CPU_TYPE_NAME("cortex-a57"),
+   // ARM_CPU_TYPE_NAME("cortex-a72"),
+   // ARM_CPU_TYPE_NAME("cortex-a76"),
     ARM_CPU_TYPE_NAME("cortex-r5"),
-    ARM_CPU_TYPE_NAME("a64fx"),
-    ARM_CPU_TYPE_NAME("neoverse-n1"),
-    ARM_CPU_TYPE_NAME("host"),
-    ARM_CPU_TYPE_NAME("max"),
+   // ARM_CPU_TYPE_NAME("a64fx"),
+   // ARM_CPU_TYPE_NAME("neoverse-n1"),
+   // ARM_CPU_TYPE_NAME("host"),
+   // ARM_CPU_TYPE_NAME("max"),
 };
 
 static bool cpu_type_valid(const char *cpu)
@@ -2067,7 +2067,7 @@ static void machvirt_init(MachineState *machine)
 
         object_unref(cpuobj);
 
-        virt_set_memmap(vms, pa_bits);
+        virt_set_memmap(vms, pa_bits); 
     }
 
     /* We can probe only here because during property set
@@ -2284,8 +2284,8 @@ static void machvirt_init(MachineState *machine)
     vms->highmem_ecam &= (!firmware_loaded || aarch64);
 
     create_rtc(vms);
-
-    create_pcie(vms);
+    // no need for pcie
+    //create_pcie(vms); 
 
     if (has_ged && aarch64 && firmware_loaded && virt_is_acpi_enabled(vms)) {
         vms->acpi_dev = create_acpi_ged(vms);
@@ -2305,10 +2305,11 @@ static void machvirt_init(MachineState *machine)
      * (which will be automatically plugged in to the transports). If
      * no backend is created the transport will just sit harmlessly idle.
      */
-    create_virtio_devices(vms);
+    // no need for virtios
+    //create_virtio_devices(vms);
 
-    vms->fw_cfg = create_fw_cfg(vms, &address_space_memory);
-    rom_set_fw(vms->fw_cfg);
+    //vms->fw_cfg = create_fw_cfg(vms, &address_space_memory);
+    //rom_set_fw(vms->fw_cfg);
 
     create_platform_bus(vms);
 
