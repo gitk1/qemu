@@ -31,14 +31,6 @@ config ARM_VIRT
     select VIRTIO_MEM_SUPPORTED
     select ACPI_CXL
 
-config VIRT_R5
-    bool
-    select ARM_GIC
-    select ARM_MPTIMER
-    select ARM_TIMER
-    select PL011
-    
-
 config CHEETAH
     bool
     select OMAP
